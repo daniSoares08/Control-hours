@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Controle de Horas — Contrato</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="container">
+    <div class="header">
+      <div>
+        <h1>Controle de Horas do Contrato</h1>
+        <p class="muted">
+          Meta mensal: <strong>20h</strong> • Pagamento fixo: <strong>R$ 4.500,00</strong> • Congela se saldo <strong>&lt; -40h</strong>
+        </p>
+      </div>
+      <div class="pill" id="statusPill">Carregando…</div>
+    </div>
+  </header>
+
+  <main class="container grid">
+    <section class="card">
+      <h2>Lançar mês</h2>
+
+      <form id="entryForm" class="form">
+        <label>
+          Mês
+          <input id="monthInput" type="month" required />
+        </label>
+
+        <label>
+          Valor da hora (R$)
+          <input id="rateInput" type="number" inputmode="decimal" step="0.01" min="0" value="225" required />
+        </label>
+
+        <label>
+          Nº da Nota Fiscal (NF)
+          <input id="nfInput" type="text" placeholder="ex: 12345" />
+        </label>
+
+        <div class="osHeader">
+          <div>
+            <strong>Ordens de Serviço (OS)</strong>
+            <div class="muted small">Somatório dos valores das OS compõe o mês (R$) → convertido em horas (R$ ÷ valor/hora).</div>
+          </div>
+          <button type="button" class="secondary" id="addOsBtn">+ Adicionar OS</button>
+        </div>
+
+        <div class="osTableWrap">
+          <table class="osTable">
+            <thead>
+              <tr>
+                <th>Nº OS (opcional)</th>
+                <th class="right">Valor (R$)</th>
+                <th class="right">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="osTbody"></tbody>
+          </table>
+        </div>
+
+        <div class="calcPreview" id="calcPreview"></div>
+
+        <div class="row">
+          <button type="submit" id="saveBtn">Adicionar</button>
+          <button type="button" class="secondary" id="cancelEditBtn" hidden>Cancelar edição</button>
+        </div>
+
+        <p class="hint" id="freezeHint"></p>
+      </form>
+
+      <hr />
+
+      <div class="summary">
+        <div class="kpi">
+          <div class="kpi-label">Saldo no banco</div>
+          <div class="kpi-value" id="bankValue">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Meses lançados</div>
+          <div class="kpi-value" id="monthsCount">—</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Pago total</div>
+          <div class="kpi-value" id="paidTotal">—</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="secondary" id="exportBtn" type="button">Exportar JSON</button>
+        <label class="fileBtn">
+          Importar JSON
+          <input id="importInput" type="file" accept="application/json" hidden />
+        </label>
+
+        <button class="secondary" id="exportXlsBtn" type="button">Exportar XLS (último mês)</button>
+        <button class="danger" id="resetBtn" type="button">Zerar tudo</button>
+      </div>
+
+      <p class="muted small">
+        * O pagamento é sempre R$ 4.500,00 por mês lançado. O banco de horas vem da diferença entre horas convertidas e 20h.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Histórico</h2>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>NF</th>
+              <th class="right">Total OS (R$)</th>
+              <th class="right">R$/h</th>
+              <th class="right">Horas</th>
+              <th class="right">Diferença (h)</th>
+              <th class="right">Saldo após mês (h)</th>
+              <th class="right">Pagamento</th>
+              <th class="right">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="9" class="muted">Nenhum mês lançado ainda.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <span class="muted small">Rodando 100% local (Live Server). Dados ficam no seu navegador (localStorage).</span>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
