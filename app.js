@@ -1,6 +1,5 @@
 (() => {
   const META_HORAS = 20;
-  const PAGAMENTO = 4500;
   const RATE_DEFAULT = 247.50;
   const STORAGE_KEY = "contract_hours_tracker_v3";
 
@@ -123,8 +122,7 @@
       exportedAt: new Date().toISOString(),
       meta: {
         targetMonthlyHours: META_HORAS,
-        fixedPayment: PAGAMENTO,
-        freezeThreshold: FREEZE_THRESHOLD,
+        rateDefault: RATE_DEFAULT,
       },
       data: state,
     };
@@ -216,7 +214,7 @@
 
     monthsCount.textContent = String(timeline.rows.length);
 
-    const totalPaid = timeline.rows.length * PAGAMENTO;
+    const totalPaid = timeline.rows.reduce((acc, r) => acc + r.payment, 0);
     paidTotal.textContent = formatBRL(totalPaid);
 
     statusPill.textContent = "ATIVO";
@@ -257,7 +255,7 @@
       bankTd.className += " " + (row.bankAfter >= 0 ? "good" : "bad");
       tr.appendChild(bankTd);
 
-      tr.appendChild(td(formatBRL(PAGAMENTO), "right"));
+      tr.appendChild(td(formatBRL(row.payment), "right"));
 
       const actionsTd = document.createElement("td");
       actionsTd.className = "right";
@@ -287,6 +285,12 @@
 
   function updatePreview() {
     const rate = safeNum(rateInput.value, RATE_DEFAULT);
+
+    const headerPayment = document.getElementById("headerPayment");
+    if (headerPayment) {
+      headerPayment.textContent = rate > 0 ? formatBRL(round2(rate * META_HORAS)) : "—";
+    }
+
     if (!(rate > 0)) {
       calcPreview.textContent = "Valor/hora precisa ser > 0.";
       return;
@@ -311,7 +315,7 @@
     editingId = id;
 
     monthInput.value = `${entry.year}-${String(entry.month).padStart(2, "0")}`;
-    rateInput.value = String(entry.rate ?? 225);
+    rateInput.value = String(entry.rate ?? RATE_DEFAULT);
     nfInput.value = entry.nf ?? "";
 
     osTbody.innerHTML = "";
@@ -368,7 +372,8 @@
         moneyTotal: round2(moneyTotal),
         hours: round2(hours),
         diff,
-        bankAfter: bank
+        bankAfter: bank,
+        payment: round2(rate * META_HORAS)
       });
     }
 
@@ -465,17 +470,18 @@
       ["Diferença do mês (h)", lastRow.diff],
       ["Saldo antes do mês (h)", prevBank],
       ["Saldo após o mês (h)", lastRow.bankAfter],
-      ["Pagamento do mês (R$)", PAGAMENTO],
+      ["Pagamento do mês (R$)", lastRow.payment],
     ];
 
-    const historicoHeader = ["Mês", "Total OS (R$)", "R$/h", "Horas", "Diferença (h)", "Saldo após mês (h)"];
+    const historicoHeader = ["Mês", "Total OS (R$)", "R$/h", "Horas", "Diferença (h)", "Saldo após mês (h)", "Pagamento (R$)"];
     const historico = timelineRows.map(r => ([
       `${r.year}-${String(r.month).padStart(2, "0")}`,
       r.moneyTotal,
       r.rate,
       r.hours,
       r.diff,
-      r.bankAfter
+      r.bankAfter,
+      r.payment
     ]));
 
     const osHeader = ["Nº OS", "Valor (R$)"];
