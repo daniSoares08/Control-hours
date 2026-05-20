@@ -1,7 +1,7 @@
 (() => {
   const META_HORAS = 20;
   const PAGAMENTO = 4500;
-  const FREEZE_THRESHOLD = -40; // congela se saldo < -40
+  const RATE_DEFAULT = 247.50;
   const STORAGE_KEY = "contract_hours_tracker_v3";
 
   let state = loadState();
@@ -58,14 +58,7 @@
     const { year, month } = parseMonthValue(m);
     const id = `${year}-${String(month).padStart(2, "0")}`;
 
-    // congelado: só permite editar/excluir
-    const computed = computeTimeline(state.entries);
-    if (computed.isFrozenNow && editingId === null) {
-      freezeHint.textContent = "Contrato congelado: corrija lançamentos (editar/excluir) para voltar acima de -40h.";
-      return;
-    }
-
-    const rate = round2(safeNum(rateInput.value, 225));
+    const rate = round2(safeNum(rateInput.value, RATE_DEFAULT));
     if (!(rate > 0)) {
       alert("Valor da hora precisa ser maior que 0.");
       return;
@@ -117,7 +110,7 @@
     // reset form
     entryForm.reset();
     monthInput.value = toMonthValue(new Date());
-    rateInput.value = "225";
+    rateInput.value = String(RATE_DEFAULT);
     nfInput.value = "";
     osTbody.innerHTML = "";
     ensureOsRows(3);
@@ -226,18 +219,16 @@
     const totalPaid = timeline.rows.length * PAGAMENTO;
     paidTotal.textContent = formatBRL(totalPaid);
 
-    if (timeline.isFrozenNow) {
-      statusPill.textContent = "CONTRATO CONGELADO";
-      statusPill.className = "pill bad";
-      saveBtn.disabled = true;
-      freezeHint.innerHTML = `Saldo atual ${formatHours(bank)} (congela se < -40h).`;
+    statusPill.textContent = "ATIVO";
+    statusPill.className = "pill good";
+    saveBtn.disabled = false;
+
+    if (bank < 0) {
+      freezeHint.innerHTML = `Saldo atual: <strong>${signedHours(bank)}</strong> — atenção ao banco negativo.`;
       freezeHint.className = "hint bad";
     } else {
-      statusPill.textContent = "ATIVO";
-      statusPill.className = "pill good";
-      saveBtn.disabled = false;
-      freezeHint.textContent = "";
-      freezeHint.className = "hint";
+      freezeHint.innerHTML = `Saldo atual: <strong>${signedHours(bank)}</strong>`;
+      freezeHint.className = "hint good";
     }
 
     if (timeline.rows.length === 0) {
@@ -295,7 +286,7 @@
   }
 
   function updatePreview() {
-    const rate = safeNum(rateInput.value, 225);
+    const rate = safeNum(rateInput.value, RATE_DEFAULT);
     if (!(rate > 0)) {
       calcPreview.textContent = "Valor/hora precisa ser > 0.";
       return;
@@ -360,7 +351,7 @@
     let bank = 0;
 
     for (const e of sorted) {
-      const rate = Number.isFinite(Number(e.rate)) ? Number(e.rate) : 225;
+      const rate = Number.isFinite(Number(e.rate)) ? Number(e.rate) : RATE_DEFAULT;
       const moneyTotal = Number.isFinite(Number(e.moneyTotal))
         ? Number(e.moneyTotal)
         : round2((Array.isArray(e.os) ? e.os : []).reduce((acc, x) => acc + (Number(x.value) || 0), 0));
@@ -381,7 +372,7 @@
       });
     }
 
-    return { rows, bankNow: bank, isFrozenNow: bank < FREEZE_THRESHOLD };
+    return { rows, bankNow: bank };
   }
 
   // ---------------- OS UI ----------------
@@ -568,7 +559,7 @@
 
     // v3
     if (Array.isArray(e.os)) {
-      const rate = Number.isFinite(Number(e.rate)) ? round2(Number(e.rate)) : 225;
+      const rate = Number.isFinite(Number(e.rate)) ? round2(Number(e.rate)) : RATE_DEFAULT;
       const os = e.os
         .map(o => ({ num: (o?.num || "").trim(), value: round2(Number(o?.value) || 0) }))
         .filter(o => Number.isFinite(o.value) && o.value >= 0);
@@ -582,7 +573,7 @@
     }
 
     // v2/v1 (tinha hours, rate, money)
-    const rate = Number.isFinite(Number(e.rate)) ? round2(Number(e.rate)) : 225;
+    const rate = Number.isFinite(Number(e.rate)) ? round2(Number(e.rate)) : RATE_DEFAULT;
     const hours = Number.isFinite(Number(e.hours)) ? round2(Number(e.hours)) : 0;
     const moneyTotal = Number.isFinite(Number(e.money)) ? round2(Number(e.money)) : round2(hours * rate);
 

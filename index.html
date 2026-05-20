@@ -12,12 +12,17 @@
       <div>
         <h1>Controle de Horas do Contrato</h1>
         <p class="muted">
-          Meta mensal: <strong>20h</strong> • Pagamento fixo: <strong>R$ 4.500,00</strong> • Congela se saldo <strong>&lt; -40h</strong>
+          Meta mensal: <strong>20h</strong> • Valor da hora: <strong>R$ 247,50</strong> • Pagamento fixo: <strong>R$ 4.500,00</strong>
         </p>
       </div>
       <div class="pill" id="statusPill">Carregando…</div>
     </div>
   </header>
+
+  <div class="container notice-bar">
+    <span class="notice-icon">⚠</span>
+    Limite de <strong>20h/mês</strong>. Horas excedentes ou faltantes acumulam no banco de horas — acompanhe o saldo ao lado.
+  </div>
 
   <main class="container grid">
     <section class="card">
@@ -31,7 +36,7 @@
 
         <label>
           Valor da hora (R$)
-          <input id="rateInput" type="number" inputmode="decimal" step="0.01" min="0" value="225" required />
+          <input id="rateInput" type="number" inputmode="decimal" step="0.01" min="0" value="247.50" required />
         </label>
 
         <label>
@@ -99,7 +104,7 @@
       </div>
 
       <p class="muted small">
-        * O pagamento é sempre R$ 4.500,00 por mês lançado. O banco de horas vem da diferença entre horas convertidas e 20h.
+        * O pagamento é sempre R$ 4.500,00 por mês lançado. O banco de horas vem da diferença entre as horas convertidas e a meta de 20h.
       </p>
     </section>
 
